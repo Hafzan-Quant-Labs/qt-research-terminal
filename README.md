@@ -27,11 +27,6 @@ The terminal is designed to the aesthetic standard of institutional research inf
 
 ---
 
-## Screenshots
-
-
----
-
 ## Features
 
 ### Panel 01 — Implied Volatility Surface
