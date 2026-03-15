@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Hafzan QT Research</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --black: #000000;
+  --white: #ffffff;
+  --off-white: #e8e8e8;
+  --dim-white: rgba(255,255,255,0.35);
+  --faint-white: rgba(255,255,255,0.08);
+  --border: rgba(255,255,255,0.1);
+  --border-bright: rgba(255,255,255,0.25);
+  --accent: #ffffff;
+  --accent-blue: #4fc3f7;
+  --accent-green: #69f0ae;
+  --accent-red: #ff5252;
+  --accent-yellow: #ffd740;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+}
+
+html, body {
+  background: #000;
+  color: var(--white);
+  font-family: var(--mono);
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── LAYOUT ── */
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  padding-bottom: 72px;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: #000;
+  z-index: 50;
+}
+
+.topbar-left { display:flex; align-items:center; gap:32px; }
+
+.wordmark {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 6px;
+  color: var(--white);
+  text-transform: uppercase;
+}
+
+.topbar-badge {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--dim-white);
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+}
+
+.live-dot {
+  display: inline-block;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--accent-green);
+  box-shadow: 0 0 6px var(--accent-green);
+  animation: blink 2s ease-in-out infinite;
+  margin-right: 6px;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+
+.mkt-item { display:flex; flex-direction:column; align-items:flex-end; gap:1px; }
+.mkt-val { font-size: 12px; font-weight: 500; color: var(--white); }
+.mkt-lbl { font-size: 8px; letter-spacing: 3px; color: var(--dim-white); }
+.mkt-up { color: var(--accent-green) !important; }
+.mkt-down { color: var(--accent-red) !important; }
+
+.topbar-time {
+  font-size: 11px;
+  font-weight: 300;
+  color: var(--dim-white);
+  letter-spacing: 2px;
+  border-left: 1px solid var(--border);
+  padding-left: 24px;
+}
+
+/* ── TAB NAV ── */
+.tabnav {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: #000;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  border-right: 1px solid var(--border);
+  color: var(--dim-white);
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  padding: 0 28px;
+  height: 38px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.tab-btn:hover { color: var(--white); background: var(--faint-white); }
+.tab-btn.active {
+  color: var(--white);
+  background: var(--faint-white);
+}
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--white);
+}
+
+.tab-btn .tab-index {
+  font-size: 8px;
+  color: var(--dim-white);
+  margin-right: 8px;
+}
+
+/* ── WORKSPACE ── */
+.workspace {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── LEFT SIDEBAR ── */
+.sidebar {
+  width: 240px;
+  min-width: 240px;
+  border-right: 1px solid var(--border);
+  background: #000;
+  overflow-y: auto;
+  flex-shrink: 0;
+  padding: 20px 0;
+}
+
+.sidebar::-webkit-scrollbar { width: 2px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: var(--border); }
+
+.sidebar-section {
+  padding: 0 20px 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+.sidebar-section:last-child { border-bottom: none; }
+
+.sidebar-heading {
+  font-size: 8px;
+  letter-spacing: 4px;
+  color: var(--dim-white);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  padding-top: 4px;
+}
+
+.ctrl-group { margin-bottom: 18px; }
+.ctrl-group:last-child { margin-bottom: 0; }
+
+.ctrl-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 7px;
+}
+.ctrl-name {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim-white);
+  text-transform: uppercase;
+}
+.ctrl-value {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--white);
+  font-variant-numeric: tabular-nums;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 1px;
+  background: rgba(255,255,255,0.2);
+  outline: none;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 10px; height: 10px;
+  border-radius: 0;
+  background: var(--white);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.4); }
+
+select {
+  background: #000;
+  color: var(--white);
+  border: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  padding: 6px 10px;
+  width: 100%;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+}
+select:hover { border-color: var(--border-bright); }
+
+.stat-block {
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+}
+.stat-block-lbl { font-size: 8px; letter-spacing: 3px; color: var(--dim-white); margin-bottom: 4px; }
+.stat-block-val { font-size: 15px; font-weight: 600; color: var(--white); font-variant-numeric: tabular-nums; }
+.stat-block-val.pos { color: var(--accent-green); }
+.stat-block-val.neg { color: var(--accent-red); }
+
+/* ── MAIN CANVAS AREA ── */
+.main {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  background: #000;
+}
+
+.panel {
+  display: none;
+  width: 100%;
+  height: 100%;
+}
+.panel.active { display: flex; flex-direction: column; }
+
+/* ── CHART HEADER BAR ── */
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.chart-title {
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: var(--white);
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.chart-subtitle {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim-white);
+}
+
+.chart-meta {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.meta-tag {
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim-white);
+  border-left: 1px solid var(--border);
+  padding-left: 16px;
+}
+
+/* ── CHART CANVAS WRAP ── */
+.canvas-wrap {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+canvas { display: block; }
+
+#vol-3d-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── LEGEND BAR ── */
+.legend-bar {
+  display: flex;
+  gap: 24px;
+  padding: 10px 24px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--dim-white);
+}
+
+.leg-line {
+  width: 20px;
+  height: 1px;
+}
+.leg-dash {
+  width: 20px;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, currentColor 0, currentColor 4px, transparent 4px, transparent 8px);
+}
+
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ══ TOPBAR ══ -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="wordmark">Hafzan QT Research</div>
+    <div class="topbar-badge"><span class="live-dot"></span>LIVE</div>
+    <div class="topbar-badge">DERIVATIVES ANALYTICS v4.2</div>
+    <div style="display:flex;gap:18px;align-items:center;border-left:1px solid rgba(255,255,255,0.1);padding-left:24px;margin-left:8px;"><a href="https://www.linkedin.com/in/amaanullah-bhatti/" target="_blank" style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,0.32);text-decoration:none;font-size:9px;letter-spacing:2px;transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.32)'"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>LINKEDIN</a><a href="https://github.com/amaanullah21" target="_blank" style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,0.32);text-decoration:none;font-size:9px;letter-spacing:2px;transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.32)'"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>GITHUB</a></div>
+  </div>
+  <div class="topbar-right">
+    <div class="mkt-item"><span class="mkt-val mkt-up" id="spx-val">4,892.15</span><span class="mkt-lbl">SPX</span></div>
+    <div class="mkt-item"><span class="mkt-val" id="vix-val">18.43</span><span class="mkt-lbl">VIX</span></div>
+    <div class="mkt-item"><span class="mkt-val mkt-up" id="tnx-val">4.312</span><span class="mkt-lbl">10Y</span></div>
+    <div class="mkt-item"><span class="mkt-val" id="dxy-val">104.21</span><span class="mkt-lbl">DXY</span></div>
+    <div class="topbar-time" id="utc-clock">--:--:-- UTC</div>
+  </div>
+</div>
+
+<!-- ══ TAB NAV ══ -->
+<div class="tabnav">
+  <button class="tab-btn active" onclick="switchTab('vol',this)"><span class="tab-index">01</span>IMPLIED VOL SURFACE</button>
+  <button class="tab-btn" onclick="switchTab('greeks',this)"><span class="tab-index">02</span>OPTIONS GREEKS</button>
+  <button class="tab-btn" onclick="switchTab('corr',this)"><span class="tab-index">03</span>CORRELATION MATRIX</button>
+  <button class="tab-btn" onclick="switchTab('mc',this)"><span class="tab-index">04</span>MONTE CARLO SIM</button>
+</div>
+
+<!-- ══ WORKSPACE ══ -->
+<div class="workspace">
+
+<!-- ════════════════════════════════
+     PANEL 01 · VOL SURFACE
+════════════════════════════════ -->
+<div class="panel active" id="panel-vol" style="flex-direction:row;">
+
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Surface Parameters</div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span class="ctrl-name">ATM Vol</span><span class="ctrl-value" id="v-atm-val">20.0%</span></div>
+        <input type="range" id="v-atm" min="5" max="60" value="20" step="0.5" oninput="updateVol3D()">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span class="ctrl-name">Put Skew</span><span class="ctrl-value" id="v-skew-val">−2.0</span></div>
+        <input type="range" id="v-skew" min="-8" max="3" value="-2" step="0.1" oninput="updateVol3D()">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span class="ctrl-name">Curvature</span><span class="ctrl-value" id="v-curv-val">4.0</span></div>
+        <input type="range" id="v-curv" min="0" max="15" value="4" step="0.1" oninput="updateVol3D()">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span class="ctrl-name">Term Structure</span><span class="ctrl-value" id="v-term-val">3.0</span></div>
+        <input type="range" id="v-term" min="0" max="12" value="3" step="0.1" oninput="updateVol3D()">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span class="ctrl-name">Vol of Vol</span><span class="ctrl-value" id="v-vvol-val">0.40</span></div>
+        <input type="range" id="v-vvol" min="0.05" max="1.5" value="0.4" step="0.01" oninput="updateVol3D()">
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Model</div>
+      <div class="ctrl-group">
+        <select id="v-model" onchange="updateVol3D()">
+          <option value="sabr">SVI / SABR Approx</option>
+          <option value="heston">Heston Inspired</option>
+          <option value="svi">Pure SVI</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Surface Stats</div>
+      <div class="stat-block"><div class="stat-block-lbl">MIN IV</div><div class="stat-block-val" id="vs-min">—</div></div>
+      <div class="stat-block"><div class="stat-block-lbl">MAX IV</div><div class="stat-block-val" id="vs-max">—</div></div>
+      <div class="stat-block"><div class="stat-block-lbl">ATM SLOPE</div><div class="stat-block-val" id="vs-slope">—</div></div>
+      <div class="stat-block"><div class="stat-block-lbl">TERM RATIO (1M/1Y)</div><div class="stat-block-val" id="vs-ratio">—</div></div>
+    </div>
+  </div>
+
+  <!-- MAIN CHART -->
+  <div class="main">
+    <div class="panel active" style="flex-direction:column;">
+      <div class="chart-header">
+        <div><div class="chart-title">Implied Volatility Surface</div><div class="chart-subtitle" style="margin-top:3px">Strike × Expiry · Drag to rotate · Colour = IV level</div></div>
+        <div class="chart-meta">
+          <span class="meta-tag">SABR-APPROX</span>
+          <span class="meta-tag">40 × 30 GRID</span>
+          <span class="meta-tag">REAL-TIME</span>
+        </div>
+      </div>
+      <div class="canvas-wrap">
+        <div id="vol-3d-container"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     PANEL 02 · GREEKS
+════════════════════════════════ -->
+<div class="panel" id="panel-greeks" style="flex-direction:row;">
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Option Parameters</div>
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span class="ctrl-name">Spot (S)</span><span class="ctrl-value" id="g-spot-val">100</span></div>
+        <input type="range" id="g-spot" min="60" max="140" value="100" oninput="drawGreeks()">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span class="ctrl-name">Implied Vol σ</span><span class="ctrl-value" id="g-vol-val">20.0%</span></div>
+        <input type="range" id="g-vol" min="1" max="80" value="20" step="0.5" oninput="drawGreeks()">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span class="ctrl-name">Risk-Free Rate r</span><span class="ctrl-value" id="g-rate-val">5.00%</span></div>
+        <input type="range" id="g-rate" min="0" max="15" value="5" step="0.05" oninput="drawGreeks()">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span class="ctrl-name">Div Yield q</span><span class="ctrl-value" id="g-div-val">1.50%</span></div>
+        <input type="range" id="g-div" min="0" max="8" value="1.5" step="0.05" oninput="drawGreeks()">
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Display</div>
+      <div class="ctrl-group">
+        <select id="g-greek" onchange="drawGreeks()">
+          <option value="delta">Delta  ∂V/∂S</option>
+          <option value="gamma">Gamma  ∂²V/∂S²</option>
+          <option value="theta">Theta  ∂V/∂t</option>
+          <option value="vega">Vega   ∂V/∂σ</option>
+          <option value="rho">Rho    ∂V/∂r</option>
+        </select>
+      </div>
+      <div class="ctrl-group" style="margin-top:12px;">
+        <select id="g-type" onchange="drawGreeks()">
+          <option value="call">Call</option>
+          <option value="put">Put</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">At-The-Money</div>
+      <div class="stat-block"><div class="stat-block-lbl">GREEK VALUE</div><div class="stat-block-val" id="g-atm-val">—</div></div>
+      <div class="stat-block"><div class="stat-block-lbl">STRIKE RANGE</div><div class="stat-block-val">60 – 140</div></div>
+      <div class="stat-block"><div class="stat-block-lbl">EXPIRY RANGE</div><div class="stat-block-val">1W – 2Y</div></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="panel active" style="flex-direction:column;">
+      <div class="chart-header">
+        <div><div class="chart-title" id="g-chart-title">Delta — Black-Scholes</div><div class="chart-subtitle" style="margin-top:3px">Strike (x) × Time to Expiry (y) · Topographic isoline overlay</div></div>
+        <div class="chart-meta">
+          <span class="meta-tag">GBM PRICING</span>
+          <span class="meta-tag">60 × 50 GRID</span>
+        </div>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="greeks-canvas"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     PANEL 03 · CORRELATION
+════════════════════════════════ -->
+<div class="panel" id="panel-corr" style="flex-direction:row;">
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Market Regime</div>
+      <div class="ctrl-group">
+        <select id="corr-regime" onchange="drawCorr()">
+          <option value="normal">Normal / Low Vol</option>
+          <option value="stress">Stress / Crisis</option>
+          <option value="recovery">Post-Crisis Recovery</option>
+          <option value="qe">QE / Risk-On</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Estimation</div>
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span class="ctrl-name">Noise (σ)</span><span class="ctrl-value" id="corr-noise-val">3%</span></div>
+        <input type="range" id="corr-noise" min="0" max="15" value="3" oninput="drawCorr()">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span class="ctrl-name">Shrinkage λ</span><span class="ctrl-value" id="corr-shrink-val">0.10</span></div>
+        <input type="range" id="corr-shrink" min="0" max="1" value="0.1" step="0.01" oninput="drawCorr()">
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Matrix Stats</div>
+      <div class="stat-block"><div class="stat-block-lbl">AVG CORR</div><div class="stat-block-val" id="corr-avg">—</div></div>
+      <div class="stat-block"><div class="stat-block-lbl">MAX OFF-DIAG</div><div class="stat-block-val pos" id="corr-max">—</div></div>
+      <div class="stat-block"><div class="stat-block-lbl">MIN OFF-DIAG</div><div class="stat-block-val neg" id="corr-min">—</div></div>
+      <div class="stat-block"><div class="stat-block-lbl">EFFECTIVE RANK</div><div class="stat-block-val" id="corr-rank">—</div></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="panel active" style="flex-direction:column;">
+      <div class="chart-header">
+        <div><div class="chart-title">Cross-Asset Correlation Matrix</div><div class="chart-subtitle" style="margin-top:3px">Ledoit-Wolf shrinkage estimator · 10 assets · Regime-conditional</div></div>
+        <div class="chart-meta">
+          <span class="meta-tag" id="corr-regime-tag">NORMAL</span>
+          <span class="meta-tag">10 × 10</span>
+        </div>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="corr-canvas"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     PANEL 04 · MONTE CARLO
+════════════════════════════════ -->
+<div class="panel" id="panel-mc" style="flex-direction:row;">
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Process Parameters</div>
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span class="ctrl-name">Paths N</span><span class="ctrl-value" id="mc-paths-val">200</span></div>
+        <input type="range" id="mc-paths" min="50" max="500" value="200" step="10" oninput="runMC()">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span class="ctrl-name">Annual Drift μ</span><span class="ctrl-value" id="mc-mu-val">8.0%</span></div>
+        <input type="range" id="mc-mu" min="-30" max="40" value="8" step="0.5" oninput="runMC()">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span class="ctrl-name">Annual Vol σ</span><span class="ctrl-value" id="mc-sig-val">20.0%</span></div>
+        <input type="range" id="mc-sig" min="2" max="80" value="20" step="0.5" oninput="runMC()">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span class="ctrl-name">Horizon (days)</span><span class="ctrl-value" id="mc-days-val">252</span></div>
+        <input type="range" id="mc-days" min="21" max="756" value="252" step="21" oninput="runMC()">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span class="ctrl-name">Jump Intensity λ</span><span class="ctrl-value" id="mc-jmp-val">0.05</span></div>
+        <input type="range" id="mc-jmp" min="0" max="0.5" value="0.05" step="0.01" oninput="runMC()">
+      </div>
+      <div class="ctrl-group">
+        <div class="ctrl-label"><span class="ctrl-name">Jump Size (−%)</span><span class="ctrl-value" id="mc-jsz-val">8%</span></div>
+        <input type="range" id="mc-jsz" min="0" max="30" value="8" step="1" oninput="runMC()">
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Process</div>
+      <div class="ctrl-group">
+        <select id="mc-proc" onchange="runMC()">
+          <option value="gbm">GBM (log-normal)</option>
+          <option value="merton">Merton Jump-Diffusion</option>
+          <option value="cev">CEV Process</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-heading">Terminal Distribution</div>
+      <div class="stat-block"><div class="stat-block-lbl">E[S_T]</div><div class="stat-block-val" id="mc-mean">—</div></div>
+      <div class="stat-block"><div class="stat-block-lbl">5th PCT</div><div class="stat-block-val neg" id="mc-p5">—</div></div>
+      <div class="stat-block"><div class="stat-block-lbl">95th PCT</div><div class="stat-block-val pos" id="mc-p95">—</div></div>
+      <div class="stat-block"><div class="stat-block-lbl">P(S_T > S_0)</div><div class="stat-block-val pos" id="mc-prob">—</div></div>
+      <div class="stat-block"><div class="stat-block-lbl">CVAR (5%)</div><div class="stat-block-val neg" id="mc-cvar">—</div></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="panel active" style="flex-direction:column;">
+      <div class="chart-header">
+        <div><div class="chart-title">Monte Carlo Path Simulation</div><div class="chart-subtitle" style="margin-top:3px">Geometric Brownian Motion + Merton Jump · S₀ = 100 · Antithetic variates</div></div>
+        <div class="chart-meta">
+          <span class="meta-tag" id="mc-proc-tag">GBM</span>
+          <span class="meta-tag">STRATIFIED</span>
+        </div>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="mc-canvas"></canvas>
+      </div>
+      <div class="legend-bar">
+        <div class="leg-item"><div class="leg-line" style="background:#fff;height:2px;width:24px;"></div>MEDIAN</div>
+        <div class="leg-item"><div class="leg-line" style="background:rgba(111,207,151,0.9);height:1.5px;width:24px;"></div>75th PCT</div>
+        <div class="leg-item"><div class="leg-line" style="background:rgba(79,195,247,0.9);height:1.5px;width:24px;"></div>95th PCT</div>
+        <div class="leg-item"><div class="leg-line" style="background:rgba(255,121,97,0.9);height:1.5px;width:24px;"></div>25th PCT</div>
+        <div class="leg-item"><div class="leg-line" style="background:rgba(255,82,82,0.9);height:1.5px;width:24px;"></div>5th PCT</div>
+        <div class="leg-item"><div class="leg-line" style="background:rgba(255,255,255,0.06);height:1.5px;width:24px;"></div>PATHS</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /workspace -->
+</div><!-- /shell -->
+
+<script>
+'use strict';
+
+// ════════════════════════════════
+// CLOCK & TICKER
+// ════════════════════════════════
+(function tick(){
+  const now = new Date();
+  const hh=String(now.getUTCHours()).padStart(2,'0');
+  const mm=String(now.getUTCMinutes()).padStart(2,'0');
+  const ss=String(now.getUTCSeconds()).padStart(2,'0');
+  document.getElementById('utc-clock').textContent = `${hh}:${mm}:${ss} UTC`;
+  const spx = 4892.15 + (Math.random()-0.5)*0.6;
+  const vix = 18.43 + (Math.random()-0.5)*0.15;
+  document.getElementById('spx-val').textContent = spx.toFixed(2);
+  document.getElementById('vix-val').textContent = vix.toFixed(2);
+  setTimeout(tick, 1000);
+})();
+
+// ════════════════════════════════
+// TAB SWITCHING
+// ════════════════════════════════
+let activeTab = 'vol';
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#panel-vol,#panel-greeks,#panel-corr,#panel-mc').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('panel-'+id).classList.add('active');
+  activeTab = id;
+  requestAnimationFrame(()=>{
+    if(id==='greeks') drawGreeks();
+    if(id==='corr') drawCorr();
+    if(id==='mc') runMC();
+  });
+}
+
+window.addEventListener('resize', ()=>{
+  if(activeTab==='greeks') drawGreeks();
+  if(activeTab==='corr') drawCorr();
+  if(activeTab==='mc') runMC();
+});
+
+// ════════════════════════════════
+// MATH UTILS
+// ════════════════════════════════
+function normCDF(x) {
+  const a=[0.254829592,-0.284496736,1.421413741,-1.453152027,1.061405429],p=0.3275911;
+  const s=x<0?-1:1; x=Math.abs(x)/Math.SQRT2;
+  const t=1/(1+p*x);
+  const y=1-(((((a[4]*t+a[3])*t+a[2])*t+a[1])*t+a[0])*t*Math.exp(-x*x));
+  return 0.5*(1+s*y);
+}
+function normPDF(x){ return Math.exp(-0.5*x*x)/Math.sqrt(2*Math.PI); }
+function randn(){
+  let u,v;
+  do{ u=Math.random(); }while(!u);
+  do{ v=Math.random(); }while(!v);
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+
+function bsGreek(greek, type, S, K, T, r, q, v) {
+  if(T<=0.0001) return 0;
+  const sqT=Math.sqrt(T);
+  const d1=(Math.log(S/K)+(r-q+0.5*v*v)*T)/(v*sqT);
+  const d2=d1-v*sqT;
+  const isCall=(type==='call');
+  switch(greek){
+    case 'delta': return isCall ? Math.exp(-q*T)*normCDF(d1) : -Math.exp(-q*T)*normCDF(-d1);
+    case 'gamma': return Math.exp(-q*T)*normPDF(d1)/(S*v*sqT);
+    case 'theta': {
+      const A = -S*Math.exp(-q*T)*normPDF(d1)*v/(2*sqT);
+      if(isCall) return (A - r*K*Math.exp(-r*T)*normCDF(d2) + q*S*Math.exp(-q*T)*normCDF(d1))/365;
+      return (A + r*K*Math.exp(-r*T)*normCDF(-d2) - q*S*Math.exp(-q*T)*normCDF(-d1))/365;
+    }
+    case 'vega': return S*Math.exp(-q*T)*normPDF(d1)*sqT/100;
+    case 'rho': {
+      if(isCall) return K*T*Math.exp(-r*T)*normCDF(d2)/100;
+      return -K*T*Math.exp(-r*T)*normCDF(-d2)/100;
+    }
+  }
+}
+
+// ════════════════════════════════
+// TAB 1 · 3D VOL SURFACE
+// ════════════════════════════════
+let volRenderer, volScene, volCamera, volGroup, volAnimId;
+
+function ivSmile(logM, T, atm, skew, curv, term, vvol, model) {
+  const x=logM;
+  const termFactor = term * (1 - Math.exp(-T*1.5)) / 100;
+  let iv;
+  if(model==='svi'){
+    const a=atm/100, b=Math.abs(skew)*0.015, rho=skew<0?-0.7:0.3, m=0, s=curv*0.02+0.05;
+    iv = Math.sqrt(Math.max(0.001, a + b*(rho*(x-m)+Math.sqrt((x-m)*(x-m)+s*s)))) + termFactor;
+  } else if(model==='heston') {
+    const kappa=2, theta=atm/100, vol0=atm/100;
+    iv = theta + (vol0-theta)*Math.exp(-kappa*T) + skew*x*0.01 + curv*x*x*0.008 + termFactor;
+  } else {
+    iv = atm/100 + skew*x*0.015 + curv*x*x*0.008 + termFactor;
+    iv *= (1 + vvol*Math.abs(x)*0.05);
+  }
+  return Math.max(0.01, Math.min(2, iv));
+}
+
+function buildVol3D() {
+  const container = document.getElementById('vol-3d-container');
+  const W=container.clientWidth||900, H=container.clientHeight||500;
+  volRenderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  volRenderer.setSize(W,H);
+  volRenderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  volRenderer.setClearColor(0x000000,1);
+  container.appendChild(volRenderer.domElement);
+
+  volScene = new THREE.Scene();
+  volCamera = new THREE.PerspectiveCamera(42, W/H, 0.1, 2000);
+  volCamera.position.set(0, 55, 130);
+  volCamera.lookAt(0, 10, 0);
+
+  volScene.add(new THREE.AmbientLight(0xffffff, 0.25));
+  const d1 = new THREE.DirectionalLight(0xffffff, 0.7);
+  d1.position.set(80,100,60); volScene.add(d1);
+  const d2 = new THREE.DirectionalLight(0xaaddff, 0.3);
+  d2.position.set(-80,40,-60); volScene.add(d2);
+
+  createVolSurface();
+
+  let drag=false, prev={x:0,y:0}, rotY=0, rotX=0.28;
+  volRenderer.domElement.addEventListener('mousedown', e=>{drag=true;prev={x:e.clientX,y:e.clientY};});
+  window.addEventListener('mouseup',()=>drag=false);
+  window.addEventListener('mousemove', e=>{
+    if(!drag)return;
+    rotY += (e.clientX-prev.x)*0.004;
+    rotX += (e.clientY-prev.y)*0.004;
+    rotX = Math.max(-1, Math.min(1.2, rotX));
+    if(volGroup){ volGroup.rotation.y=rotY; volGroup.rotation.x=rotX; }
+    prev = {x:e.clientX,y:e.clientY};
+  });
+
+  (function anim(){
+    volAnimId=requestAnimationFrame(anim);
+    if(volGroup&&!drag) volGroup.rotation.y+=0.0015;
+    volRenderer.render(volScene,volCamera);
+  })();
+}
+
+function topoColor(t) {
+  // Pure black → white via scientific topographic
+  const stops=[
+    [0,    [0,0,30]],
+    [0.08, [0,20,80]],
+    [0.2,  [0,80,160]],
+    [0.35, [0,180,220]],
+    [0.5,  [20,220,180]],
+    [0.62, [120,240,80]],
+    [0.75, [255,220,0]],
+    [0.88, [255,100,0]],
+    [1,    [255,20,60]]
+  ];
+  for(let s=0;s<stops.length-1;s++){
+    const [t0,c0]=stops[s], [t1,c1]=stops[s+1];
+    if(t>=t0&&t<=t1){
+      const f=(t-t0)/(t1-t0);
+      return [c0[0]+(c1[0]-c0[0])*f, c0[1]+(c1[1]-c0[1])*f, c0[2]+(c1[2]-c0[2])*f];
+    }
+  }
+  return [255,20,60];
+}
+
+function createVolSurface() {
+  if(volGroup){ volScene.remove(volGroup); }
+  volGroup = new THREE.Group();
+
+  const atm=parseFloat(document.getElementById('v-atm').value);
+  const skew=parseFloat(document.getElementById('v-skew').value);
+  const curv=parseFloat(document.getElementById('v-curv').value);
+  const term=parseFloat(document.getElementById('v-term').value);
+  const vvol=parseFloat(document.getElementById('v-vvol').value);
+  const model=document.getElementById('v-model').value;
+
+  const NX=50, NY=40;
+  const logMs = Array.from({length:NX},(_,i)=> -0.5 + i*(1.0/(NX-1)));
+  const Ts = Array.from({length:NY},(_,j)=> 0.02 + j*(2/(NY-1)));
+
+  let minIV=Infinity, maxIV=-Infinity;
+  const ivG=[];
+  for(let j=0;j<NY;j++){
+    ivG[j]=[];
+    for(let i=0;i<NX;i++){
+      const iv=ivSmile(logMs[i],Ts[j],atm,skew,curv,term,vvol,model);
+      ivG[j][i]=iv;
+      if(iv<minIV)minIV=iv;
+      if(iv>maxIV)maxIV=iv;
+    }
+  }
+
+  // Stats
+  document.getElementById('vs-min').textContent=(minIV*100).toFixed(1)+'%';
+  document.getElementById('vs-max').textContent=(maxIV*100).toFixed(1)+'%';
+  const slope=((ivG[0][0]-ivG[0][NX-1])/(logMs[NX-1]-logMs[0])*100).toFixed(2);
+  document.getElementById('vs-slope').textContent=slope;
+  const ratio=(ivG[0][Math.floor(NX/2)]/ivG[NY-1][Math.floor(NX/2)]).toFixed(2);
+  document.getElementById('vs-ratio').textContent=ratio+'×';
+
+  const geo=new THREE.BufferGeometry();
+  const pos=[], cols=[], idx=[];
+  for(let j=0;j<NY;j++){
+    for(let i=0;i<NX;i++){
+      const x=(i/(NX-1)-0.5)*100;
+      const z=(j/(NY-1)-0.5)*75;
+      const iv=ivG[j][i];
+      const y=(iv-minIV)/(maxIV-minIV)*36;
+      pos.push(x,y,z);
+      const t=(iv-minIV)/(maxIV-minIV);
+      const [r,g,b]=topoColor(t);
+      cols.push(r/255,g/255,b/255);
+    }
+  }
+  for(let j=0;j<NY-1;j++){
+    for(let i=0;i<NX-1;i++){
+      const a=j*NX+i;
+      idx.push(a,a+1,a+NX, a+1,a+NX+1,a+NX);
+    }
+  }
+
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));
+  geo.setAttribute('color',new THREE.Float32BufferAttribute(cols,3));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+
+  const mat=new THREE.MeshPhongMaterial({vertexColors:true,side:THREE.DoubleSide,shininess:60});
+  volGroup.add(new THREE.Mesh(geo,mat));
+
+  // Wireframe
+  const wireMat=new THREE.MeshBasicMaterial({color:0x001a2a,wireframe:true,transparent:true,opacity:0.18});
+  volGroup.add(new THREE.Mesh(geo.clone(),wireMat));
+
+  // Grid lines at bottom
+  const gridMat=new THREE.LineBasicMaterial({color:0x111111});
+  const gridGeo=new THREE.BufferGeometry();
+  const gridPts=[];
+  for(let i=0;i<=10;i++){
+    const x=(i/10-0.5)*100;
+    gridPts.push(x,-0.5,-37.5, x,-0.5,37.5);
+  }
+  for(let j=0;j<=8;j++){
+    const z=(j/8-0.5)*75;
+    gridPts.push(-50,-0.5,z, 50,-0.5,z);
+  }
+  gridGeo.setAttribute('position',new THREE.Float32BufferAttribute(gridPts,3));
+  gridGeo.setIndex([...Array(gridPts.length/3)].map((_,i)=>i));
+  // just draw as lines pairs
+  const lineSeg=new THREE.LineSegments(gridGeo,gridMat);
+  volGroup.add(lineSeg);
+
+  volGroup.rotation.x=0.28;
+  volScene.add(volGroup);
+}
+
+function updateVol3D(){
+  const atm=parseFloat(document.getElementById('v-atm').value);
+  const skew=parseFloat(document.getElementById('v-skew').value);
+  const curv=parseFloat(document.getElementById('v-curv').value);
+  const term=parseFloat(document.getElementById('v-term').value);
+  const vvol=parseFloat(document.getElementById('v-vvol').value);
+  document.getElementById('v-atm-val').textContent=atm.toFixed(1)+'%';
+  document.getElementById('v-skew-val').textContent=(skew>=0?'+':'')+skew.toFixed(1);
+  document.getElementById('v-curv-val').textContent=curv.toFixed(1);
+  document.getElementById('v-term-val').textContent=term.toFixed(1);
+  document.getElementById('v-vvol-val').textContent=vvol.toFixed(2);
+  createVolSurface();
+}
+
+buildVol3D();
+
+// ════════════════════════════════
+// TAB 2 · GREEKS HEATMAP
+// ════════════════════════════════
+function drawGreeks() {
+  const canvas=document.getElementById('greeks-canvas');
+  const wrap=canvas.parentElement;
+  const W=wrap.clientWidth||900, H=wrap.clientHeight||500;
+  canvas.width=W; canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+
+  const S=parseFloat(document.getElementById('g-spot').value);
+  const sig=parseFloat(document.getElementById('g-vol').value)/100;
+  const r=parseFloat(document.getElementById('g-rate').value)/100;
+  const q=parseFloat(document.getElementById('g-div').value)/100;
+  const greek=document.getElementById('g-greek').value;
+  const type=document.getElementById('g-type').value;
+
+  document.getElementById('g-spot-val').textContent=S.toFixed(0);
+  document.getElementById('g-vol-val').textContent=parseFloat(document.getElementById('g-vol').value).toFixed(1)+'%';
+  document.getElementById('g-rate-val').textContent=parseFloat(document.getElementById('g-rate').value).toFixed(2)+'%';
+  document.getElementById('g-div-val').textContent=parseFloat(document.getElementById('g-div').value).toFixed(2)+'%';
+
+  const greekLabels={delta:'Delta ∂V/∂S',gamma:'Gamma ∂²V/∂S²',theta:'Theta ∂V/∂t',vega:'Vega ∂V/∂σ',rho:'Rho ∂V/∂r'};
+  document.getElementById('g-chart-title').textContent=greekLabels[greek]+' — Black-Scholes-Merton';
+
+  const NK=80, NT=70;
+  const Ks=Array.from({length:NK},(_,i)=>S*0.5+i*(S*1.0/(NK-1)));
+  const Ts=Array.from({length:NT},(_,j)=>0.019+j*(2.1/(NT-1)));
+
+  let mn=Infinity,mx=-Infinity;
+  const G=[];
+  for(let j=0;j<NT;j++){
+    G[j]=[];
+    for(let i=0;i<NK;i++){
+      const v=bsGreek(greek,type,S,Ks[i],Ts[j],r,q,sig);
+      G[j][i]=v; if(v<mn)mn=v; if(v>mx)mx=v;
+    }
+  }
+
+  const pad={l:56,r:60,t:12,b:44};
+  const cw=(W-pad.l-pad.r)/NK;
+  const ch=(H-pad.t-pad.b)/NT;
+
+  function greekColor(t){
+    // Deep navy → white with green/amber midtones
+    const stops=[
+      [0,   [0,0,0]],
+      [0.12,[0,15,45]],
+      [0.28,[0,50,120]],
+      [0.44,[0,130,180]],
+      [0.55,[255,255,255]],
+      [0.68,[255,215,0]],
+      [0.80,[255,120,0]],
+      [0.90,[220,40,0]],
+      [1,   [160,0,0]]
+    ];
+    for(let s=0;s<stops.length-1;s++){
+      const [t0,c0]=stops[s],[t1,c1]=stops[s+1];
+      if(t>=t0&&t<=t1){
+        const f=(t-t0)/(t1-t0);
+        return `rgb(${Math.round(c0[0]+(c1[0]-c0[0])*f)},${Math.round(c0[1]+(c1[1]-c0[1])*f)},${Math.round(c0[2]+(c1[2]-c0[2])*f)})`;
+      }
+    }
+    return '#000';
+  }
+
+  for(let j=0;j<NT;j++){
+    for(let i=0;i<NK;i++){
+      const t=(G[j][i]-mn)/(mx-mn||1);
+      ctx.fillStyle=greekColor(t);
+      ctx.fillRect(pad.l+i*cw, pad.t+(NT-1-j)*ch, cw+1, ch+1);
+    }
+  }
+
+  // Isolines
+  const nLevels=12;
+  for(let lv=1;lv<nLevels;lv++){
+    const thr=mn+(mx-mn)*(lv/nLevels);
+    ctx.strokeStyle='rgba(255,255,255,0.18)';
+    ctx.lineWidth=0.7;
+    for(let j=0;j<NT-1;j++){
+      for(let i=0;i<NK-1;i++){
+        const v00=G[j][i],v10=G[j][i+1],v01=G[j+1][i];
+        if((v00>=thr)!==(v10>=thr)){
+          const f=(thr-v00)/(v10-v00);
+          const x=pad.l+(i+f)*cw, y=pad.t+(NT-1-j)*ch+ch*0.5;
+          ctx.beginPath();ctx.arc(x,y,0.4,0,Math.PI*2);ctx.stroke();
+        }
+        if((v00>=thr)!==(v01>=thr)){
+          const f=(thr-v00)/(v01-v00);
+          const x=pad.l+i*cw+cw*0.5, y=pad.t+(NT-1-(j+f))*ch;
+          ctx.beginPath();ctx.arc(x,y,0.4,0,Math.PI*2);ctx.stroke();
+        }
+      }
+    }
+  }
+
+  // ATM line
+  const atmX=pad.l+(S-Ks[0])/(Ks[NK-1]-Ks[0])*(W-pad.l-pad.r);
+  ctx.save();
+  ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.lineWidth=1; ctx.setLineDash([3,5]);
+  ctx.beginPath(); ctx.moveTo(atmX,pad.t); ctx.lineTo(atmX,H-pad.b); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.font='9px IBM Plex Mono'; ctx.textAlign='center';
+  ctx.fillText('ATM',atmX,pad.t+8);
+  ctx.restore();
+
+  // ATM stat
+  const atmI=Math.round((S-Ks[0])/(Ks[NK-1]-Ks[0])*(NK-1));
+  const atmJ=Math.round(NT/3);
+  const atmVal=G[atmJ]?.[atmI]||0;
+  document.getElementById('g-atm-val').textContent=atmVal.toFixed(4);
+
+  // Axes
+  ctx.strokeStyle='rgba(255,255,255,0.12)'; ctx.lineWidth=1;
+  ctx.strokeRect(pad.l,pad.t,W-pad.l-pad.r,H-pad.t-pad.b);
+  ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.font='10px IBM Plex Mono';
+
+  // X axis labels
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for(let i=0;i<=5;i++){
+    const idx=Math.round(i*(NK-1)/5);
+    const x=pad.l+idx*cw;
+    ctx.fillText(Ks[idx].toFixed(0),x,H-pad.b+6);
+  }
+  ctx.fillText('Strike',W/2,H-14);
+
+  // Y axis
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(let i=0;i<=5;i++){
+    const idx=Math.round(i*(NT-1)/5);
+    const y=pad.t+(NT-1-idx)*ch;
+    ctx.fillText(Ts[idx].toFixed(2),pad.l-6,y);
+  }
+  ctx.save(); ctx.translate(14,H/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('Expiry T (yrs)',0,0); ctx.restore();
+
+  // Colour bar
+  const bX=W-pad.r+8, bH=H-pad.t-pad.b;
+  for(let i=0;i<bH;i++){
+    ctx.fillStyle=greekColor(1-i/bH);
+    ctx.fillRect(bX,pad.t+i,10,1);
+  }
+  ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='9px IBM Plex Mono'; ctx.textAlign='left'; ctx.textBaseline='top';
+  ctx.fillText(mx.toFixed(3),bX+12,pad.t);
+  ctx.fillText(mn.toFixed(3),bX+12,pad.t+bH-8);
+}
+
+// ════════════════════════════════
+// TAB 3 · CORRELATION
+// ════════════════════════════════
+const ASSETS=['SPX','NDX','TLT','GLD','CRU','BTC','EUR/USD','USD/JPY','HY CDX','VIX'];
+const CORRS={
+  normal:[
+    [ 1.00, 0.93,-0.44,-0.10, 0.34, 0.40, 0.17,-0.21, 0.58,-0.76],
+    [ 0.93, 1.00,-0.49,-0.07, 0.29, 0.52, 0.19,-0.17, 0.54,-0.79],
+    [-0.44,-0.49, 1.00, 0.32,-0.21,-0.24, 0.12, 0.41,-0.34, 0.53],
+    [-0.10,-0.07, 0.32, 1.00, 0.44, 0.17, 0.26, 0.36,-0.09, 0.09],
+    [ 0.34, 0.29,-0.21, 0.44, 1.00, 0.37, 0.14,-0.11, 0.27,-0.31],
+    [ 0.40, 0.52,-0.24, 0.17, 0.37, 1.00, 0.21,-0.14, 0.37,-0.46],
+    [ 0.17, 0.19, 0.12, 0.26, 0.14, 0.21, 1.00, 0.54, 0.11,-0.19],
+    [-0.21,-0.17, 0.41, 0.36,-0.11,-0.14, 0.54, 1.00,-0.19, 0.26],
+    [ 0.58, 0.54,-0.34,-0.09, 0.27, 0.37, 0.11,-0.19, 1.00,-0.61],
+    [-0.76,-0.79, 0.53, 0.09,-0.31,-0.46,-0.19, 0.26,-0.61, 1.00]
+  ],
+  stress:[
+    [ 1.00, 0.97,-0.71,-0.28, 0.76, 0.73, 0.34,-0.52, 0.83,-0.96],
+    [ 0.97, 1.00,-0.73,-0.23, 0.73, 0.79, 0.37,-0.49, 0.81,-0.97],
+    [-0.71,-0.73, 1.00, 0.52,-0.47,-0.52, 0.16, 0.67,-0.62, 0.81],
+    [-0.28,-0.23, 0.52, 1.00, 0.22, 0.06, 0.09, 0.42,-0.22, 0.29],
+    [ 0.76, 0.73,-0.47, 0.22, 1.00, 0.66, 0.24,-0.26, 0.62,-0.76],
+    [ 0.73, 0.79,-0.52, 0.06, 0.66, 1.00, 0.29,-0.29, 0.66,-0.79],
+    [ 0.34, 0.37, 0.16, 0.09, 0.24, 0.29, 1.00, 0.49, 0.21,-0.41],
+    [-0.52,-0.49, 0.67, 0.42,-0.26,-0.29, 0.49, 1.00,-0.33, 0.59],
+    [ 0.83, 0.81,-0.62,-0.22, 0.62, 0.66, 0.21,-0.33, 1.00,-0.89],
+    [-0.96,-0.97, 0.81, 0.29,-0.76,-0.79,-0.41, 0.59,-0.89, 1.00]
+  ],
+  recovery:[
+    [ 1.00, 0.87,-0.29, 0.06, 0.46, 0.57, 0.23,-0.16, 0.64,-0.60],
+    [ 0.87, 1.00,-0.33, 0.09, 0.41, 0.63, 0.26,-0.13, 0.57,-0.64],
+    [-0.29,-0.33, 1.00, 0.19,-0.14,-0.17, 0.07, 0.29,-0.27, 0.41],
+    [ 0.06, 0.09, 0.19, 1.00, 0.56, 0.29, 0.29, 0.33, 0.06, 0.06],
+    [ 0.46, 0.41,-0.14, 0.56, 1.00, 0.51, 0.19,-0.04, 0.36,-0.24],
+    [ 0.57, 0.63,-0.17, 0.29, 0.51, 1.00, 0.29,-0.09, 0.46,-0.37],
+    [ 0.23, 0.26, 0.07, 0.29, 0.19, 0.29, 1.00, 0.61, 0.16,-0.14],
+    [-0.16,-0.13, 0.29, 0.33,-0.04,-0.09, 0.61, 1.00,-0.11, 0.19],
+    [ 0.64, 0.57,-0.27, 0.06, 0.36, 0.46, 0.16,-0.11, 1.00,-0.49],
+    [-0.60,-0.64, 0.41, 0.06,-0.24,-0.37,-0.14, 0.19,-0.49, 1.00]
+  ],
+  qe:[
+    [ 1.00, 0.89,-0.35, 0.20, 0.52, 0.68, 0.31,-0.08, 0.71,-0.55],
+    [ 0.89, 1.00,-0.38, 0.23, 0.48, 0.71, 0.33,-0.06, 0.67,-0.58],
+    [-0.35,-0.38, 1.00, 0.11,-0.08,-0.12, 0.04, 0.22,-0.22, 0.36],
+    [ 0.20, 0.23, 0.11, 1.00, 0.61, 0.38, 0.34, 0.40, 0.18, 0.03],
+    [ 0.52, 0.48,-0.08, 0.61, 1.00, 0.59, 0.28, 0.09, 0.51,-0.19],
+    [ 0.68, 0.71,-0.12, 0.38, 0.59, 1.00, 0.37,-0.03, 0.58,-0.32],
+    [ 0.31, 0.33, 0.04, 0.34, 0.28, 0.37, 1.00, 0.66, 0.26,-0.09],
+    [-0.08,-0.06, 0.22, 0.40, 0.09,-0.03, 0.66, 1.00, 0.04, 0.12],
+    [ 0.71, 0.67,-0.22, 0.18, 0.51, 0.58, 0.26, 0.04, 1.00,-0.44],
+    [-0.55,-0.58, 0.36, 0.03,-0.19,-0.32,-0.09, 0.12,-0.44, 1.00]
+  ]
+};
+
+function drawCorr() {
+  const canvas=document.getElementById('corr-canvas');
+  const wrap=canvas.parentElement;
+  const W=wrap.clientWidth||900, H=wrap.clientHeight||520;
+  canvas.width=W; canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+
+  const regime=document.getElementById('corr-regime').value;
+  const noise=parseFloat(document.getElementById('corr-noise').value)/100;
+  const shrink=parseFloat(document.getElementById('corr-shrink').value);
+  document.getElementById('corr-noise-val').textContent=document.getElementById('corr-noise').value+'%';
+  document.getElementById('corr-shrink-val').textContent=shrink.toFixed(2);
+
+  const tags={normal:'NORMAL / LOW VOL',stress:'STRESS / CRISIS',recovery:'POST-CRISIS RECOVERY',qe:'QE / RISK-ON'};
+  document.getElementById('corr-regime-tag').textContent=tags[regime];
+
+  const N=ASSETS.length;
+  const base=CORRS[regime];
+  const C=base.map(row=>row.map((v,j,r,i)=>{
+    const n=(Math.random()-0.5)*2*noise;
+    let raw=Math.max(-1,Math.min(1,v+n));
+    // Ledoit-Wolf shrinkage toward identity
+    return raw*(1-shrink)+shrink*(raw===1?1:0);
+  }));
+  // ensure diagonal = 1
+  for(let i=0;i<N;i++) C[i][i]=1;
+
+  const labW=62, colbarW=24;
+  const pad={l:labW, r:colbarW+32, t:28, b:labW};
+  const avail=Math.min(W-pad.l-pad.r, H-pad.t-pad.b);
+  const cell=avail/N;
+  const mX=pad.l, mY=pad.t;
+
+  let sumOff=0, maxOff=-1, minOff=1, cnt=0;
+  for(let i=0;i<N;i++) for(let j=0;j<N;j++) if(i!==j){
+    sumOff+=C[i][j]; if(C[i][j]>maxOff)maxOff=C[i][j]; if(C[i][j]<minOff)minOff=C[i][j]; cnt++;
+  }
+  const avgCorr=sumOff/cnt;
+  document.getElementById('corr-avg').textContent=avgCorr.toFixed(3);
+  document.getElementById('corr-max').textContent=maxOff.toFixed(3);
+  document.getElementById('corr-min').textContent=minOff.toFixed(3);
+  // effective rank ≈ N / (1 + (N-1)*avgCorr²)
+  const effRank=(N/(1+(N-1)*avgCorr*avgCorr)).toFixed(1);
+  document.getElementById('corr-rank').textContent=effRank;
+
+  function corrCell(v){
+    if(v>=0){
+      const t=v;
+      return `rgb(${Math.round(255*t*0)},${Math.round(40+215*t)},${Math.round(80+100*t)})`;
+    } else {
+      const t=-v;
+      return `rgb(${Math.round(180+75*t)},${Math.round(20*(1-t))},${Math.round(20*(1-t))})`;
+    }
+  }
+
+  for(let i=0;i<N;i++){
+    for(let j=0;j<N;j++){
+      const x=mX+j*cell, y=mY+i*cell;
+      ctx.fillStyle=corrCell(C[i][j]);
+      ctx.fillRect(x,y,cell,cell);
+      ctx.strokeStyle='#000'; ctx.lineWidth=0.5;
+      ctx.strokeRect(x,y,cell,cell);
+      const fs=Math.max(7,Math.min(11,cell*0.24));
+      ctx.font=`${fs}px IBM Plex Mono`;
+      const absV=Math.abs(C[i][j]);
+      ctx.fillStyle = i===j ? '#000' : absV>0.5 ? 'rgba(0,0,0,0.85)' : 'rgba(255,255,255,0.65)';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(C[i][j].toFixed(2),x+cell/2,y+cell/2);
+    }
+  }
+
+  // Labels
+  const fs=Math.max(7,Math.min(10,cell*0.22));
+  ctx.font=`${fs}px IBM Plex Mono`; ctx.fillStyle='rgba(255,255,255,0.7)';
+  ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(let i=0;i<N;i++) ctx.fillText(ASSETS[i],mX-6,mY+i*cell+cell/2);
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  for(let j=0;j<N;j++){
+    ctx.save(); ctx.translate(mX+j*cell+cell/2,mY+N*cell+5);
+    ctx.rotate(-Math.PI/4); ctx.fillText(ASSETS[j],0,0); ctx.restore();
+  }
+
+  // Colour bar
+  const bX=W-colbarW-4, bH=N*cell, bY=mY;
+  for(let i=0;i<bH;i++){
+    const t=1-i/bH, v=t*2-1;
+    ctx.fillStyle=corrCell(v);
+    ctx.fillRect(bX,bY+i,14,1);
+  }
+  ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.font='9px IBM Plex Mono';
+  ctx.textAlign='left'; ctx.textBaseline='top'; ctx.fillText('+1.0',bX+16,bY);
+  ctx.textBaseline='middle'; ctx.fillText('0',bX+16,bY+bH/2);
+  ctx.textBaseline='bottom'; ctx.fillText('−1.0',bX+16,bY+bH);
+}
+
+// ════════════════════════════════
+// TAB 4 · MONTE CARLO
+// ════════════════════════════════
+function runMC() {
+  const canvas=document.getElementById('mc-canvas');
+  const wrap=canvas.parentElement;
+  const W=wrap.clientWidth||900, H=wrap.clientHeight||500;
+  canvas.width=W; canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
+
+  const nP=parseInt(document.getElementById('mc-paths').value);
+  const mu=parseFloat(document.getElementById('mc-mu').value)/100;
+  const sig=parseFloat(document.getElementById('mc-sig').value)/100;
+  const T=parseInt(document.getElementById('mc-days').value);
+  const jmpLam=parseFloat(document.getElementById('mc-jmp').value);
+  const jmpSz=parseFloat(document.getElementById('mc-jsz').value)/100;
+  const proc=document.getElementById('mc-proc').value;
+
+  document.getElementById('mc-paths-val').textContent=nP;
+  document.getElementById('mc-mu-val').textContent=(mu*100).toFixed(1)+'%';
+  document.getElementById('mc-sig-val').textContent=(sig*100).toFixed(1)+'%';
+  document.getElementById('mc-days-val').textContent=T;
+  document.getElementById('mc-jmp-val').textContent=jmpLam.toFixed(2);
+  document.getElementById('mc-jsz-val').textContent=(jmpSz*100).toFixed(0)+'%';
+  document.getElementById('mc-proc-tag').textContent=proc.toUpperCase();
+
+  const dt=1/252;
+  const S0=100;
+
+  const paths=[];
+  for(let p=0;p<nP;p++){
+    const path=[S0]; let S=S0;
+    const anti=p%2===1&&p>0;
+    for(let t=1;t<=T;t++){
+      let z=randn(); if(anti)z=-z;
+      let dS;
+      if(proc==='gbm'){
+        dS=S*((mu-0.5*sig*sig)*dt+sig*Math.sqrt(dt)*z);
+      } else if(proc==='merton'){
+        const jump=Math.random()<jmpLam*dt ? -jmpSz*S*(1+randn()*0.3) : 0;
+        dS=S*((mu-0.5*sig*sig)*dt+sig*Math.sqrt(dt)*z)+jump;
+      } else { // CEV
+        const beta=0.7;
+        dS=S*((mu-0.5*sig*sig)*dt)+sig*Math.pow(S/S0,beta-1)*Math.sqrt(dt)*z*S;
+      }
+      S=Math.max(0.01, S+dS);
+      path.push(S);
+    }
+    paths.push(path);
+  }
+
+  // Percentiles
+  function pct(arr,p){ const s=[...arr].sort((a,b)=>a-b); const i=p/100*(s.length-1); const lo=Math.floor(i),hi=Math.ceil(i); return s[lo]+(s[hi]-s[lo])*(i-lo); }
+  const bands={p5:[],p25:[],p50:[],p75:[],p95:[]};
+  for(let t=0;t<=T;t++){
+    const v=paths.map(p=>p[t]);
+    bands.p5.push(pct(v,5)); bands.p25.push(pct(v,25));
+    bands.p50.push(pct(v,50)); bands.p75.push(pct(v,75)); bands.p95.push(pct(v,95));
+  }
+
+  const finalV=paths.map(p=>p[T]);
+  const meanF=finalV.reduce((a,b)=>a+b)/finalV.length;
+  const p5f=pct(finalV,5), p95f=pct(finalV,95);
+  const probProfit=finalV.filter(v=>v>S0).length/finalV.length*100;
+  // CVaR
+  const sorted=[...finalV].sort((a,b)=>a-b);
+  const cvarN=Math.floor(sorted.length*0.05)||1;
+  const cvar=sorted.slice(0,cvarN).reduce((a,b)=>a+b)/cvarN;
+
+  document.getElementById('mc-mean').textContent=meanF.toFixed(2);
+  document.getElementById('mc-p5').textContent=p5f.toFixed(2);
+  document.getElementById('mc-p95').textContent=p95f.toFixed(2);
+  document.getElementById('mc-prob').textContent=probProfit.toFixed(1)+'%';
+  document.getElementById('mc-cvar').textContent=cvar.toFixed(2);
+
+  const allV=paths.flat();
+  const minV=Math.min(...allV)*0.97, maxV=Math.max(...allV)*1.03;
+  const pad={l:60,r:20,t:16,b:50};
+  const cW=W-pad.l-pad.r, cH=H-pad.t-pad.b;
+  const tx=t=>pad.l+t/T*cW;
+  const ty=v=>pad.t+(1-(v-minV)/(maxV-minV))*cH;
+
+  // Grid
+  ctx.strokeStyle='rgba(255,255,255,0.04)'; ctx.lineWidth=1;
+  for(let i=1;i<6;i++){
+    const y=pad.t+i*cH/6;
+    ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(W-pad.r,y);ctx.stroke();
+  }
+  for(let i=1;i<5;i++){
+    const x=pad.l+i*cW/5;
+    ctx.beginPath();ctx.moveTo(x,pad.t);ctx.lineTo(x,pad.t+cH);ctx.stroke();
+  }
+
+  // Individual paths
+  for(const path of paths){
+    const end=path[T];
+    const alpha=Math.max(0.025, 0.12/Math.sqrt(nP/100));
+    const col=end>S0*1.15?`rgba(105,240,174,${alpha})`:end<S0*0.85?`rgba(255,82,82,${alpha})`:`rgba(255,255,255,${alpha*0.6})`;
+    ctx.beginPath();ctx.strokeStyle=col;ctx.lineWidth=0.7;
+    for(let t=0;t<=T;t++) t===0?ctx.moveTo(tx(t),ty(path[t])):ctx.lineTo(tx(t),ty(path[t]));
+    ctx.stroke();
+  }
+
+  // Bands fill
+  function fillBand(upper,lower,color){
+    ctx.beginPath();
+    for(let t=0;t<=T;t++) t===0?ctx.moveTo(tx(t),ty(upper[t])):ctx.lineTo(tx(t),ty(upper[t]));
+    for(let t=T;t>=0;t--) ctx.lineTo(tx(t),ty(lower[t]));
+    ctx.closePath(); ctx.fillStyle=color; ctx.fill();
+  }
+  fillBand(bands.p95,bands.p5,'rgba(255,255,255,0.025)');
+  fillBand(bands.p75,bands.p25,'rgba(255,255,255,0.04)');
+
+  // Lines
+  function drawLine(band,color,w,dash=[]){
+    ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=w;ctx.setLineDash(dash);
+    for(let t=0;t<=T;t++) t===0?ctx.moveTo(tx(t),ty(band[t])):ctx.lineTo(tx(t),ty(band[t]));
+    ctx.stroke();ctx.setLineDash([]);
+  }
+  drawLine(bands.p95,'rgba(79,195,247,0.85)',1.2,[5,5]);
+  drawLine(bands.p75,'rgba(105,240,174,0.85)',1.5);
+  drawLine(bands.p50,'#ffffff',2.5);
+  drawLine(bands.p25,'rgba(255,152,0,0.85)',1.5);
+  drawLine(bands.p5,'rgba(255,82,82,0.85)',1.2,[5,5]);
+
+  // S0 baseline
+  ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1;ctx.setLineDash([2,8]);
+  ctx.beginPath();ctx.moveTo(pad.l,ty(S0));ctx.lineTo(W-pad.r,ty(S0));ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(255,255,255,0.3)';ctx.font='9px IBM Plex Mono';ctx.textAlign='left';ctx.textBaseline='bottom';
+  ctx.fillText('S₀ = 100',pad.l+4,ty(S0)-2);
+
+  // Axes
+  ctx.strokeStyle='rgba(255,255,255,0.2)';ctx.lineWidth=1;
+  ctx.strokeRect(pad.l,pad.t,cW,cH);
+
+  ctx.fillStyle='rgba(255,255,255,0.4)';ctx.font='10px IBM Plex Mono';
+  ctx.textAlign='center';ctx.textBaseline='top';
+  for(let i=0;i<=5;i++){
+    const x=pad.l+i*cW/5;
+    ctx.fillText(Math.round(i*T/5),x,pad.t+cH+8);
+  }
+  ctx.fillText('Trading Days',W/2,pad.t+cH+28);
+
+  ctx.textAlign='right';ctx.textBaseline='middle';
+  for(let i=0;i<=5;i++){
+    const v=minV+(maxV-minV)*i/5;
+    const y=pad.t+(1-i/5)*cH;
+    ctx.fillText(v.toFixed(1),pad.l-6,y);
+  }
+}
+
+// Init
+setTimeout(()=>{ drawGreeks(); drawCorr(); runMC(); }, 200);
+</script>
+<div style="position:fixed;bottom:0;left:0;right:0;background:#000;border-top:1px solid rgba(255,255,255,0.15);z-index:200;padding:18px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+  <!-- LEFT: name + copyright -->
+  <div style="display:flex;flex-direction:column;gap:5px;">
+    <span style="font-family:IBM Plex Mono,monospace;font-size:15px;font-weight:600;color:#ffffff;letter-spacing:3px;">AMAANULLAH BHATTI</span>
+    <span style="font-family:IBM Plex Mono,monospace;font-size:11px;color:rgba(255,255,255,0.5);letter-spacing:2px;">Hafzan Osmanoğlu &nbsp;·&nbsp; Quantitative Research Terminal</span>
+  </div>
+  <!-- CENTER: copyright -->
+  <div style="font-family:IBM Plex Mono,monospace;font-size:10px;color:rgba(255,255,255,0.45);letter-spacing:2px;text-align:center;">
+    © 2026 Amaanullah Bhatti (Hafzan Osmanoğlu). All rights reserved.
+  </div>
+  <!-- RIGHT: links -->
+  <div style="display:flex;gap:28px;align-items:center;">
+    <a href="https://www.linkedin.com/in/amaanullah-bhatti/" target="_blank" style="display:flex;align-items:center;gap:8px;color:#ffffff;text-decoration:none;font-family:IBM Plex Mono,monospace;font-size:11px;letter-spacing:2px;opacity:0.65;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.65">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      LINKEDIN
+    </a>
+    <a href="https://github.com/amaanullah21" target="_blank" style="display:flex;align-items:center;gap:8px;color:#ffffff;text-decoration:none;font-family:IBM Plex Mono,monospace;font-size:11px;letter-spacing:2px;opacity:0.65;transition:opacity 0.2s;" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=0.65">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      GITHUB
+    </a>
+  </div>
+</div>
+</body>
+</html>
