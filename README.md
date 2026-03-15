@@ -2,11 +2,12 @@
 
 > A professional quantitative analytics environment — built entirely in a single HTML file.
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Available-white?style=flat-square&labelColor=000000)](YOUR_LIVE_LINK_HERE)
-[![License](https://img.shields.io/badge/License-MIT-white?style=flat-square&labelColor=000000)](LICENSE)
-[![Built With](https://img.shields.io/badge/Built%20With-HTML%20%7C%20CSS%20%7C%20JavaScript-white?style=flat-square&labelColor=000000)]()
-[![Three.js](https://img.shields.io/badge/3D-Three.js%20r128-white?style=flat-square&labelColor=000000)](https://threejs.org)
-[![No Backend](https://img.shields.io/badge/Backend-None-white?style=flat-square&labelColor=000000)]()
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Available-white?style=flat-square&labelColor=0A66C2)](YOUR_LIVE_LINK_HERE)
+[![License](https://img.shields.io/badge/License-Proprietary-white?style=flat-square&labelColor=CC0000)](LICENSE)
+[![Built With](https://img.shields.io/badge/Built%20With-HTML%20%7C%20CSS%20%7C%20JS-white?style=flat-square&labelColor=E34F26)](https://developer.mozilla.org/en-US/docs/Web/HTML)
+[![Three.js](https://img.shields.io/badge/3D%20Engine-Three.js%20r128-white?style=flat-square&labelColor=049EF4)](https://threejs.org)
+[![No Backend](https://img.shields.io/badge/Backend-None-white?style=flat-square&labelColor=2EA043)]()
+[![No Framework](https://img.shields.io/badge/Framework-None-white?style=flat-square&labelColor=8B5CF6)]()
 
 ---
 
@@ -28,41 +29,11 @@ The terminal is designed to the aesthetic standard of institutional research inf
 
 ## Screenshots
 
-> *Six screenshots of the terminal in action.*
-
-### 01 — Implied Volatility Surface (3D)
-![Implied Volatility Surface](screenshots/01-vol-surface.png)
-*3D topographic implied volatility surface. Drag to rotate. Colour encodes IV level from deep navy (low) through cyan and amber to deep red (high).*
-
----
-
-### 02 — Volatility Surface Controls
-![Vol Surface Controls](screenshots/02-vol-surface-controls.png)
-*Left-panel parameter controls: ATM vol, put skew, curvature, term structure, and vol-of-vol. Model selector: SVI/SABR, Heston-inspired, and Pure SVI.*
-
----
-
-### 03 — Options Greeks Heatmap
-![Greeks Heatmap](screenshots/03-greeks-heatmap.png)
-*Delta heatmap across strike × expiry space. Topographic isoline overlay. ATM line indicator. Full BSM framework with dividend yield.*
-
----
-
-### 04 — Greeks Panel — Vega
-![Vega Heatmap](screenshots/04-greeks-vega.png)
-*Vega surface showing sensitivity to implied volatility across the full strike-expiry grid. Colour scale runs from zero sensitivity (black) to peak sensitivity (white/amber).*
-
----
-
-### 05 — Correlation Matrix — Stress Regime
-![Correlation Matrix](screenshots/05-correlation-stress.png)
-*10-asset cross-asset correlation matrix under a stress/crisis regime. Positive correlations in teal-green, negative in red. Ledoit-Wolf shrinkage estimator applied.*
-
----
-
-### 06 — Monte Carlo Simulation
-![Monte Carlo](screenshots/06-monte-carlo.png)
-*200 GBM paths with percentile bands (5th, 25th, median, 75th, 95th). Merton jump-diffusion overlay. Terminal distribution statistics shown in the left sidebar.*
+| | |
+|:---:|:---:|
+| ![Screenshot 1](screenshots/screenshot-1.png) | ![Screenshot 2](screenshots/screenshot-2.png) |
+| ![Screenshot 3](screenshots/screenshot-3.png) | ![Screenshot 4](screenshots/screenshot-4.png) |
+| ![Screenshot 5](screenshots/screenshot-5.png) | ![Screenshot 6](screenshots/screenshot-6.png) |
 
 ---
 
@@ -107,42 +78,11 @@ The terminal is designed to the aesthetic standard of institutional research inf
 
 ---
 
-## Architecture
-
-```
-hafzan-qt-research/
-│
-├── index.html              ← Entire application (single file)
-│   ├── <style>             ← CSS — layout, theming, IBM Plex Mono typography
-│   ├── <body>              ← HTML — shell, topbar, tab nav, four panels
-│   └── <script>            ← JavaScript — all computation and rendering
-│       ├── normCDF / normPDF          Black-Scholes math primitives
-│       ├── bsGreek()                  BSM Greek calculator
-│       ├── ivSmile()                  Parametric IV smile model
-│       ├── buildVol3D()               Three.js surface setup & animation
-│       ├── createVolSurface()         Surface geometry generation
-│       ├── drawGreeks()               2D heatmap renderer (Canvas 2D API)
-│       ├── drawCorr()                 Correlation matrix renderer
-│       └── runMC()                    Monte Carlo path engine
-│
-├── screenshots/            ← Screenshots for README
-│   ├── 01-vol-surface.png
-│   ├── 02-vol-surface-controls.png
-│   ├── 03-greeks-heatmap.png
-│   ├── 04-greeks-vega.png
-│   ├── 05-correlation-stress.png
-│   └── 06-monte-carlo.png
-│
-└── README.md
-```
-
----
-
 ## Mathematics
 
 ### Black-Scholes-Merton Greeks
 
-The Greeks engine implements the continuous dividend yield extension of the BSM model. For a European call on a non-dividend-paying asset adjusted for continuous yield q:
+The Greeks engine implements the continuous dividend yield extension of the BSM model. For a European call adjusted for continuous yield q:
 
 ```
 d₁ = [ln(S/K) + (r − q + ½σ²)T] / (σ√T)
@@ -188,7 +128,7 @@ The Ledoit-Wolf estimator shrinks the sample covariance matrix toward a structur
 Σ̂_LW = (1 − λ) · Σ_sample + λ · Σ_target
 ```
 
-In this implementation the target is the identity matrix scaled by sample variances, and λ is user-adjustable from 0 (no shrinkage) to 1 (full shrinkage toward identity).
+λ is user-adjustable from 0 (no shrinkage) to 1 (full shrinkage toward identity).
 
 ---
 
@@ -207,24 +147,6 @@ In this implementation the target is the identity matrix scaled by sample varian
 
 ---
 
-## Getting Started
-
-No installation required. No npm install. No build step.
-
-```bash
-# Clone the repository
-git clone https://github.com/amaanullah21/hafzan-qt-research.git
-
-# Open in browser
-open index.html
-```
-
-Or simply download `index.html` and open it directly in any modern browser (Chrome, Firefox, Safari, Edge).
-
-The only network request at runtime is loading **IBM Plex Mono** from Google Fonts and **Three.js** from cdnjs. Both can be replaced with local copies for fully offline use.
-
----
-
 ## Browser Compatibility
 
 | Browser | Status |
@@ -239,26 +161,14 @@ WebGL must be enabled for the 3D volatility surface panel.
 
 ---
 
-## Roadmap
-
-- [ ] SABR model full calibration (β, α, ρ, ν)
-- [ ] Heston model closed-form characteristic function pricing
-- [ ] Stochastic volatility path simulation (SABR, Heston)
-- [ ] Term structure bootstrapping and interpolation
-- [ ] VaR / CVaR portfolio risk engine
-- [ ] Export surface data to CSV
-- [ ] Offline mode (bundled fonts and Three.js)
-
----
-
 ## Author
 
 **Amaanullah Bhatti** (Hafzan Osmanoğlu)
 
 Quantitative Research · Derivatives Analytics · Financial Engineering
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Amaanullah%20Bhatti-white?style=flat-square&labelColor=000000&logo=linkedin)](https://www.linkedin.com/in/amaanullah-bhatti/)
-[![GitHub](https://img.shields.io/badge/GitHub-amaanullah21-white?style=flat-square&labelColor=000000&logo=github)](https://github.com/amaanullah21)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-white?style=flat-square&labelColor=0A66C2&logo=linkedin)](https://www.linkedin.com/in/amaanullah-bhatti/)
+[![GitHub](https://img.shields.io/badge/GitHub-Follow-white?style=flat-square&labelColor=181717&logo=github)](https://github.com/amaanullah21)
 
 ---
 
@@ -267,4 +177,8 @@ Quantitative Research · Derivatives Analytics · Financial Engineering
 ```
 © 2026 Amaanullah Bhatti (Hafzan Osmanoğlu). All rights reserved.
 
+This software and its source code are proprietary and confidential.
+Unauthorised copying, distribution, modification, or use of this software,
+in whole or in part, without the express written permission of the author
+is strictly prohibited.
 ```
